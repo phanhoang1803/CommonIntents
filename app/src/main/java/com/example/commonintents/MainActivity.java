@@ -2,6 +2,7 @@ package com.example.commonintents;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // CREATE A TIMER
+        // SHOW ALARMS
         button = findViewById(R.id.btn_show_alarms);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,15 +64,35 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        // OPEN WEB PAGE
+        button = findViewById(R.id.btn_open_web_page);
+        EditText url = findViewById(R.id.edt_url);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openWebPage(url.getText().toString());
+            }
+        });
+
+        button = findViewById(R.id.btn_search_web);
+        EditText query = findViewById(R.id.edt_query);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchWeb(query.getText().toString());
+            }
+        });
+
     }
 
-    private void showAllAlarms() {
-        Intent intent = new Intent(AlarmClock.ACTION_SHOW_ALARMS);
+    public void searchWeb(String query) {
+        Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+        intent.putExtra(SearchManager.QUERY, query);
         try {
             startActivity(intent);
         } catch (ActivityNotFoundException activityNotFoundException) {
-            // Fallback: Prompt the user to choose an alarm app or guide them to settings.
-            Toast.makeText(this, "No alarm app found. Please set the alarm manually.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No search web found. Please search manually.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -112,7 +133,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void showAllAlarms() {
+        Intent intent = new Intent(AlarmClock.ACTION_SHOW_ALARMS);
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException activityNotFoundException) {
+            // Fallback: Prompt the user to choose an alarm app or guide them to settings.
+            Toast.makeText(this, "No alarm app found. Please set the alarm manually.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void openWebPage(String url) {
+        if (!url.startsWith("http://") || !url.startsWith("https://"))
+            url = "https://" + url;
+
         Uri webpage = Uri.parse(url);
         Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
         try {
