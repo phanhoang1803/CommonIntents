@@ -1,21 +1,39 @@
 package com.example.commonintents;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.Manifest;
 
 import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.AlarmClock;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
     Button button;
+    private static final int REQUEST_CALL_PHONE = 1;
+    private static final int REQUEST_IMAGE_CAPTURE = 2;
+    private static final int REQUEST_PICK_MUSIC = 3;
+
+    private TextView textViewTrackName;
+    private Button btnChooseTrack;
+    private SeekBar seekBarProgress;
+    private Button btnPlayPause;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +99,60 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 searchWeb(query.getText().toString());
+            }
+        });
+
+
+        // MAKE A CALL
+        button = findViewById(R.id.btn_make_phone_call);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                makePhoneCall();
+            }
+        });
+
+        button = findViewById(R.id.btn_open_phone_dialer);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialPhoneNumber();
+            }
+        });
+
+
+        // SEND EMAIL
+        button = findViewById(R.id.btn_send_email);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                composeEmail();
+            }
+        });
+
+        // TAKE A PHOTO
+        button = findViewById(R.id.btnTakePhoto);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePhoto();
+            }
+        });
+
+
+        // PLAY MUSIC
+        btnChooseTrack = findViewById(R.id.btnChooseTrack);
+
+        btnChooseTrack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+
+                try{
+                    startActivityForResult(intent, REQUEST_PICK_MUSIC);
+                }catch (ActivityNotFoundException e){
+                    Toast.makeText(MainActivity.this, "No music app found. Please choose a track manually.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -156,5 +228,105 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "No web browser found. Please open a web browser manually.", Toast.LENGTH_SHORT).show();
         }
     }
+
+
+    private void makePhoneCall() {
+        EditText phoneNumberEditText = findViewById(R.id.input_phone_number);
+        String phoneNumber = phoneNumberEditText.getText().toString();
+
+        if (!phoneNumber.isEmpty()) {
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PHONE);
+            } else {
+                // Permission already granted
+                performCall(phoneNumber);
+            }
+        } else {
+            Toast.makeText(this, "Please enter a phone number", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void performCall(String phoneNumber) {
+        Intent dialIntent = new Intent(Intent.ACTION_CALL);
+        dialIntent.setData(Uri.parse("tel:" + phoneNumber));
+        try {
+            startActivity(dialIntent);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            // Handle the case where the app doesn't have the CALL_PHONE permission
+            Toast.makeText(this, "Permission denied. Please grant the CALL_PHONE permission.", Toast.LENGTH_SHORT).show();
+        }
+    }
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CALL_PHONE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, make the phone call
+                makePhoneCall();
+            } else {
+                // Permission denied, inform the user
+                Toast.makeText(this, "Permission denied. Cannot make a phone call without permission.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    public void dialPhoneNumber() {
+        EditText phoneNumberEditText = findViewById(R.id.input_phone_number);
+        String phoneNumber = phoneNumberEditText.getText().toString();
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:" + phoneNumber));
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException activityNotFoundException) {
+            // Fallback: Inform the user that no app can handle the dialing action.
+            Toast.makeText(this, "No dialer found. Please dial manually.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void composeEmail() {
+        EditText recipientsEditText = findViewById(R.id.editTextRecipients);
+        EditText subjectEditText = findViewById(R.id.editTextSubject);
+        EditText bodyEditText = findViewById(R.id.editTextBody);
+
+        String recipients = recipientsEditText.getText().toString();
+        String subject = subjectEditText.getText().toString();
+        String body = bodyEditText.getText().toString();
+
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+        emailIntent.setData(Uri.parse("mailto:")); // Only email apps should handle this
+
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipients});
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        emailIntent.putExtra(Intent.EXTRA_TEXT, body);
+
+        startActivity(Intent.createChooser(emailIntent, "Choose an Email client:"));
+    }
+
+    public void takePhoto(){
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        try{
+            startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+        }catch (ActivityNotFoundException e){
+            Toast.makeText(this, "No camera app found. Please take a photo manually.", Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ImageView imageView = findViewById(R.id.imgCamera);
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+            Bitmap img = (Bitmap) data.getExtras().get("data");
+            imageView.setImageBitmap(img);
+            imageView.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+
 
 }

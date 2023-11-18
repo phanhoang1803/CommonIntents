@@ -146,6 +146,39 @@
                 android:layout_weight="1"
                 android:text="Search web" />
 
+            <!-- ============================================== -->
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:background="#808080" /> <!-- Gray separator line -->
+
+
+
+            <include layout="@layout/phone_call"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                />
+
+            <include layout="@layout/camera"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                />
+
+            <include layout="@layout/email"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                />
+
+            <include layout="@layout/music_player"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                />
+
+
+
+
+
         </LinearLayout>
 
     </ScrollView>

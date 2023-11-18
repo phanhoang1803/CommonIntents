@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Email's Intents"
+        android:textSize="25dp"
+        android:textColor="@android:color/holo_red_light"
+        android:gravity="center"
+        />
+
+    <EditText
+        android:id="@+id/editTextRecipients"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="To"
+        android:inputType="textEmailAddress" />
+
+    <EditText
+        android:id="@+id/editTextSubject"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextRecipients"
+        android:layout_marginTop="16dp"
+        android:hint="Subject" />
+
+    <EditText
+        android:id="@+id/editTextBody"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextSubject"
+        android:layout_marginTop="16dp"
+        android:hint="Body"
+        android:inputType="textMultiLine"
+        android:lines="4" />
+
+
+    <Button
+        android:id="@+id/btn_send_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextBody"
+        android:layout_marginTop="16dp"
+        android:text="Send Email"
+        />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:background="#808080" /> <!-- Gray separator line -->
+
+</LinearLayout>
