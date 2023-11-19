@@ -103,27 +103,33 @@
             <include layout="@layout/search_map"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"/>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="5dp"
                 android:background="#808080" />
+
+            <!-- ============================================== -->
             <include layout="@layout/event_calandar"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"/>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="5dp"
                 android:background="#808080" />
+
+            <!-- ============================================== -->
             <include layout="@layout/contacts_people_app"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"/>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="5dp"
                 android:background="#808080" />
 
-
-
+            <!-- ============================================== -->
         </LinearLayout>
 
     </ScrollView>

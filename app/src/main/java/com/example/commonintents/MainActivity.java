@@ -36,15 +36,19 @@ public class MainActivity extends AppCompatActivity {
 
     Button button;
     private static final int REQUEST_CALL_PHONE = 1;
-    private  static  final  int REQUEST_SELECT_PHONE_NUMBER=1;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
     private static final int REQUEST_PICK_MUSIC = 3;
-    private static final int PICK_CONTACT_REQUEST = 1;
+    private static final int REQUEST_SELECT_CONTACT = 4;
+    private static  final  int REQUEST_SELECT_PHONE_NUMBER = 5;
+    private static final int REQUEST_SELECT_CONTACT_FOR_VIEWING = 6;
+    private static final int REQUEST_SELECT_CONTACT_FOR_EMAIL_EDITING = 7;
+
 
     private TextView textViewTrackName;
     private Button btnChooseTrack;
     private SeekBar seekBarProgress;
     private Button btnPlayPause;
+    private Uri globalURI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // SEARCH WEB
         button = findViewById(R.id.btn_search_web);
         EditText query = findViewById(R.id.edt_query);
         button.setOnClickListener(new View.OnClickListener() {
@@ -123,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // OPEN PHONE DIALER
         button = findViewById(R.id.btn_open_phone_dialer);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -153,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
 
         // PLAY MUSIC
         btnChooseTrack = findViewById(R.id.btnChooseTrack);
-
         btnChooseTrack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -166,6 +171,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // SEARCH MAP
         button = findViewById(R.id.btn_search_map);
         EditText map = findViewById(R.id.search_map);
         button.setOnClickListener(new View.OnClickListener() {
@@ -179,10 +186,12 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
                 catch(ActivityNotFoundException activityNotFoundException) {
-                    Toast.makeText(MainActivity.this, "No search web found. Please search manually.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "No map application found. Please search manually.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
+        // CALENDAR
         EditText title = findViewById(R.id.eTitle);
         EditText location = findViewById(R.id.eLocation);
         EditText start = findViewById(R.id.eBegin);
@@ -206,89 +215,126 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        findViewById(R.id.pickContactButton).setOnClickListener(new View.OnClickListener() {
+
+
+        // SELECT A CONTACT
+        button = findViewById(R.id.btn_select_contact);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create an Intent to pick a contact
-                Intent pickContactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
-                startActivityForResult(pickContactIntent, REQUEST_SELECT_PHONE_NUMBER);
-            }
-        });
-        findViewById(R.id.btn_viewContactButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewContact();
-            }
-        });
-        findViewById(R.id.btn_editContactButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editviewcontract();
+                selectContact();
             }
         });
 
-        findViewById(R.id.btn_insert_contract).setOnClickListener(new View.OnClickListener() {
+        // SELECT A PHONE NUMBER FROM CONTACTS
+        button = findViewById(R.id.btn_select_contact_phone);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                insertContact();
+                selectContactPhone();
             }
         });
-        Intent pickContactIntent = new Intent(Intent.ACTION_PICK, Uri.parse("content://contacts"));
-        pickContactIntent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE); // Show contacts with phone numbers
-        startActivityForResult(pickContactIntent, PICK_CONTACT_REQUEST);
+
+        // VIEW A CONTACT
+        button = findViewById(R.id.btn_view_a_contact);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+
+                try {
+                    startActivityForResult(intent, REQUEST_SELECT_CONTACT_FOR_VIEWING);
+                }catch(ActivityNotFoundException activityNotFoundException){
+                    Toast.makeText(MainActivity.this,"Unable to select a contact for viewing",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // EDIT EMAIL OF A CONTACT
+        button = findViewById(R.id.btn_edit_email_of_contact);
+        EditText newEmail = findViewById(R.id.edt_new_email);
+        findViewById(R.id.btn_edit_email_of_contact).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+
+                try {
+                    startActivityForResult(intent, REQUEST_SELECT_CONTACT_FOR_EMAIL_EDITING);
+                }catch(ActivityNotFoundException activityNotFoundException){
+                    Toast.makeText(MainActivity.this,"Unable to select a contact for email editing",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
 
-
-
-
-
-
-
+        button = findViewById(R.id.btn_insert_contact);
+        EditText newName = findViewById(R.id.edt_new_name);
+        EditText newPhoneNumber = findViewById(R.id.edt_new_phone_number);
+        EditText newEmail1 = findViewById(R.id.edt_new_email);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                insertContact(newName.getText().toString(), newEmail1.getText().toString(), newPhoneNumber.getText().toString());
+            }
+        });
     }
-    private void insertContact() {
-        Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
-        intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
-        EditText name=findViewById(R.id.insert_name);
-        EditText email=findViewById(R.id.insert_email);
-        EditText phone=findViewById(R.id.insert_phone);
-        intent.putExtra(ContactsContract.Intents.Insert.NAME, name.getText().toString());
-        intent.putExtra(ContactsContract.Intents.Insert.PHONE, phone.getText().toString());
-        intent.putExtra(ContactsContract.Intents.Insert.EMAIL, email.getText().toString());
+
+    public void insertContact(String name, String email, String phoneNumber) {
+        Intent intent = new Intent(Intent.ACTION_INSERT);
+        intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+        intent.putExtra(ContactsContract.Intents.Insert.NAME, name);
+        intent.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
+        intent.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
+
         try {
             startActivity(intent);
         }catch(ActivityNotFoundException activityNotFoundException){
-            Toast.makeText(this,"Không có ứng dụng hỗ trợ xem thông tin liên hệ",Toast.LENGTH_SHORT).show();
-
+            Toast.makeText(this,"Unable to insert the contact",Toast.LENGTH_SHORT).show();
         }
     }
 
-
-    private void viewContact() {
-        EditText idd=findViewById(R.id.viewContactButton);
-        // Create an intent to edit the contact using its ID
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        Uri contactUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, idd.getText().toString());
-        intent.setData(contactUri);
-        intent.putExtra("finishActivityOnSaveCompleted", true); // Optional flag to finish activity when done editing
-        try {
-            startActivity(intent);
-        }catch(ActivityNotFoundException activityNotFoundException){
-            Toast.makeText(this, "Không có ứng dụng hỗ trợ xem thông tin liên hệ", Toast.LENGTH_SHORT).show();
-        }
-
-
-    }
-    private void editviewcontract() {
-        EditText idd=findViewById(R.id.viewContactButton);
-        // Create an intent to edit the contact using its ID
+    public void editContact(Uri contactUri, String email) {
         Intent intent = new Intent(Intent.ACTION_EDIT);
-        Uri contactUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, idd.getText().toString());
         intent.setData(contactUri);
-        intent.putExtra("finishActivityOnSaveCompleted", true); // Optional flag to finish activity when done editing
+        intent.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
+
         try {
             startActivity(intent);
         }catch(ActivityNotFoundException activityNotFoundException){
-            Toast.makeText(this, "Không có ứng dụng hỗ trợ xem thông tin liên hệ", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"Unable to edit the selected contact",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void viewContact(Uri contactUri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, contactUri);
+        try {
+            startActivity(intent);
+        }catch(ActivityNotFoundException activityNotFoundException){
+            Toast.makeText(this,"Unable to view the selected contact",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void selectContactPhone() {
+        // Start an activity for the user to pick a phone number from contacts.
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
+        try {
+            startActivityForResult(intent, REQUEST_SELECT_PHONE_NUMBER);
+        }catch(ActivityNotFoundException activityNotFoundException){
+            Toast.makeText(this,"Unable to select a phone number from contacts",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void selectContact() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+
+        try {
+            startActivityForResult(intent, REQUEST_SELECT_CONTACT);
+        }catch(ActivityNotFoundException activityNotFoundException){
+            Toast.makeText(this,"Unable to select a contact",Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -362,8 +408,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "No web browser found. Please open a web browser manually.", Toast.LENGTH_SHORT).show();
         }
     }
-
-
+    
     private void makePhoneCall() {
         EditText phoneNumberEditText = findViewById(R.id.input_phone_number);
         String phoneNumber = phoneNumberEditText.getText().toString();
@@ -445,8 +490,6 @@ public class MainActivity extends AppCompatActivity {
         }catch (ActivityNotFoundException e){
             Toast.makeText(this, "No camera app found. Please take a photo manually.", Toast.LENGTH_SHORT).show();
         }
-
-
     }
 
     @Override
@@ -459,6 +502,25 @@ public class MainActivity extends AppCompatActivity {
             imageView.setImageBitmap(img);
             imageView.setVisibility(View.VISIBLE);
         }
+        else if (requestCode == REQUEST_SELECT_CONTACT && resultCode == RESULT_OK) {
+            Uri contactUri = globalURI = data.getData();
+            globalURI = data.getData();
+
+            // Use the contact URI to query the contact details
+            String[] projection = {ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME};
+            Cursor cursor = getContentResolver().query(contactUri, projection, null, null, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                int nameColumnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                String contactName = cursor.getString(nameColumnIndex);
+
+                // Print the name of the selected contact
+                Toast.makeText(this, "Selected contact name: " + contactName, Toast.LENGTH_SHORT).show();
+
+                // Close the cursor to avoid memory leaks
+                cursor.close();
+            }
+        }
         else if (requestCode == REQUEST_SELECT_PHONE_NUMBER && resultCode == RESULT_OK) {
             // Get the URI and query the content provider for the phone number.
             Uri contactUri = data.getData();
@@ -469,38 +531,23 @@ public class MainActivity extends AppCompatActivity {
             if (cursor != null && cursor.moveToFirst()) {
                 int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
                 String number = cursor.getString(numberIndex);
-
-                // Assuming you have a TextView with ID userInfoTextView
-                TextView userInfoTextView = findViewById(R.id.userInfoTextView);
-
-                // Update the TextView with user information
-                userInfoTextView.setText("User's Phone Number: " + number);
-
-                cursor.close(); // Don't forget to close the cursor when you're done with it
+                Toast.makeText(this, "User's Phone Number: " + number, Toast.LENGTH_SHORT).show();
             }
         }
-        else if(requestCode == PICK_CONTACT_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                Uri contactUri = data.getData();
-                processSelectedContact(contactUri);
-            } else {
-                Toast.makeText(this, "Contact selection canceled", Toast.LENGTH_SHORT).show();
-            }
+        else if (requestCode == REQUEST_SELECT_CONTACT_FOR_VIEWING && resultCode == RESULT_OK) {
+            Uri contactUri = data.getData();
+
+            viewContact(contactUri);
+        }
+        else if(requestCode == REQUEST_SELECT_CONTACT_FOR_EMAIL_EDITING && resultCode == RESULT_OK){
+            Uri contactUri = data.getData();
+
+            EditText newEmail = findViewById(R.id.edt_new_email);
+
+            editContact(contactUri, newEmail.getText().toString());
         }
     }
-    private void processSelectedContact(Uri contactUri) {
-        Cursor cursor = getContentResolver().query(contactUri, null, null, null, null);
 
-        if (cursor != null && cursor.moveToFirst()) {
-            int nameColumnIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-            String contactName = cursor.getString(nameColumnIndex);
-            Toast.makeText(this, "Selected contact: " + contactName, Toast.LENGTH_SHORT).show();
-        }
-
-        if (cursor != null) {
-            cursor.close();
-        }
-    }
     private long convertTimeToMilliseconds(String inputTime) {
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
