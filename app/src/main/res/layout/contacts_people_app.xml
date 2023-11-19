@@ -12,14 +12,6 @@
         android:textAlignment="center"
         android:textSize="25dp" />
 
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/viewContactButton"
-        android:hint="Enter id to search"
-        tools:ignore="HardcodedText" />
-
     <EditText
         android:id="@+id/edt_new_name"
         android:layout_width="match_parent"
@@ -85,15 +77,5 @@
         android:text="Insert A Contact"
         android:layout_centerInParent="true"
         android:layout_weight="1"/>
-<!--    <TextView-->
-<!--        android:id="@+id/userInfoTextView"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_below="@id/pickContactButton"-->
-<!--        android:layout_marginTop="20dp"-->
-<!--        android:textSize="18sp"-->
-<!--        android:textStyle="bold"-->
-<!--        android:layout_centerHorizontal="true" />-->
-
 
 </LinearLayout>
