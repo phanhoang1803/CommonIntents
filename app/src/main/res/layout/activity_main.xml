@@ -20,71 +20,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
+            <include layout="@layout/alarm_clock"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Alarm Clock's Intents"
-                android:textColor="@android:color/holo_red_light"
-                android:textAlignment="center"
-                android:textSize="25dp"
-                />
-
-            <EditText
-                android:id="@+id/edt_alarm_clock_message"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Message"
-                tools:ignore="HardcodedText" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <EditText
-                    android:id="@+id/edt_alarm_clock_hour"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Hour"
-                    tools:ignore="HardcodedText" />
-
-                <EditText
-                    android:id="@+id/edt_alarm_clock_minute"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Minute"
-                    tools:ignore="HardcodedText" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/alarm_buttons_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:id="@+id/btn_create_alarm"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Create An Alarm" />
-
-                <Button
-                    android:id="@+id/btn_create_timer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Start Timer" />
-
-                <Button
-                    android:id="@+id/btn_show_alarms"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Show All Alarms" />
-
-            </LinearLayout>
+                android:layout_height="match_parent"/>
 
             <View
                 android:layout_width="match_parent"
@@ -93,28 +31,9 @@
 
             <!-- ============================================== -->
 
-            <TextView
+            <include layout="@layout/web_browser"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Web Browser's Intents"
-                android:textColor="@android:color/holo_red_light"
-                android:textAlignment="center"
-                android:textSize="25dp"
-                />
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/edt_url"
-                android:hint="URL"
-                tools:ignore="HardcodedText" />
-
-            <Button
-                android:id="@+id/btn_open_web_page"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Open Web Page" />
+                android:layout_height="match_parent"/>
 
             <View
                 android:layout_width="match_parent"
@@ -123,58 +42,64 @@
 
             <!-- ============================================== -->
 
-            <TextView
+            <include layout="@layout/search_web"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Search's Intents"
-                android:textColor="@android:color/holo_red_light"
-                android:textAlignment="center"
-                android:textSize="25dp"
-                />
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/edt_query"
-                android:hint="Query"
-                tools:ignore="HardcodedText" />
-
-            <Button
-                android:id="@+id/btn_search_web"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Search web" />
-
-            <!-- ============================================== -->
+                android:layout_height="match_parent"/>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="5dp"
                 android:background="#808080" /> <!-- Gray separator line -->
 
-
+            <!-- ============================================== -->
 
             <include layout="@layout/phone_call"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 />
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:background="#808080" /> <!-- Gray separator line -->
+
+            <!-- ============================================== -->
+
             <include layout="@layout/camera"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:background="#808080" /> <!-- Gray separator line -->
+
+            <!-- ============================================== -->
 
             <include layout="@layout/email"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 />
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:background="#808080" /> <!-- Gray separator line -->
+
+            <!-- ============================================== -->
+
             <include layout="@layout/music_player"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 />
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:background="#808080" /> <!-- Gray separator line -->
+
+            <!-- ============================================== -->
 
 
 
