@@ -10,10 +10,13 @@ import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.AlarmClock;
+import android.provider.CalendarContract;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
@@ -23,12 +26,20 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 public class MainActivity extends AppCompatActivity {
 
     Button button;
     private static final int REQUEST_CALL_PHONE = 1;
+    private  static  final  int REQUEST_SELECT_PHONE_NUMBER=1;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
     private static final int REQUEST_PICK_MUSIC = 3;
+    private static final int PICK_CONTACT_REQUEST = 1;
 
     private TextView textViewTrackName;
     private Button btnChooseTrack;
@@ -155,7 +166,130 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        button = findViewById(R.id.btn_search_map);
+        EditText map = findViewById(R.id.search_map);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String text_map = map.getText().toString().trim();
+                    Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + text_map);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    intent.setPackage("com.google.android.apps.maps");
+                try{
+                    startActivity(intent);
+                }
+                catch(ActivityNotFoundException activityNotFoundException) {
+                    Toast.makeText(MainActivity.this, "No search web found. Please search manually.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        EditText title = findViewById(R.id.eTitle);
+        EditText location = findViewById(R.id.eLocation);
+        EditText start = findViewById(R.id.eBegin);
+        EditText end = findViewById(R.id.eEnd);
+        findViewById(R.id.btn_calendar).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long startTimeInMillis = convertTimeToMilliseconds(start.getText().toString());
+                long endTimeInMillis = convertTimeToMilliseconds(end.getText().toString());
+                Intent intent = new Intent(Intent.ACTION_INSERT)
+                        .setData(CalendarContract.Events.CONTENT_URI)
+                        .putExtra(CalendarContract.Events.TITLE, title.getText().toString())
+                        .putExtra(CalendarContract.Events.EVENT_LOCATION, location.getText().toString())
+                        .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startTimeInMillis)
+                        .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endTimeInMillis);
+                try{
+                    startActivity(intent);
+                }
+                catch(ActivityNotFoundException activityNotFoundException){
+                    Toast.makeText(MainActivity.this, "No search web found. Please search manually.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        findViewById(R.id.pickContactButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create an Intent to pick a contact
+                Intent pickContactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+                startActivityForResult(pickContactIntent, REQUEST_SELECT_PHONE_NUMBER);
+            }
+        });
+        findViewById(R.id.btn_viewContactButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewContact();
+            }
+        });
+        findViewById(R.id.btn_editContactButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editviewcontract();
+            }
+        });
 
+        findViewById(R.id.btn_insert_contract).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                insertContact();
+            }
+        });
+        Intent pickContactIntent = new Intent(Intent.ACTION_PICK, Uri.parse("content://contacts"));
+        pickContactIntent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE); // Show contacts with phone numbers
+        startActivityForResult(pickContactIntent, PICK_CONTACT_REQUEST);
+
+
+
+
+
+
+
+
+    }
+    private void insertContact() {
+        Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+        intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+        EditText name=findViewById(R.id.insert_name);
+        EditText email=findViewById(R.id.insert_email);
+        EditText phone=findViewById(R.id.insert_phone);
+        intent.putExtra(ContactsContract.Intents.Insert.NAME, name.getText().toString());
+        intent.putExtra(ContactsContract.Intents.Insert.PHONE, phone.getText().toString());
+        intent.putExtra(ContactsContract.Intents.Insert.EMAIL, email.getText().toString());
+        try {
+            startActivity(intent);
+        }catch(ActivityNotFoundException activityNotFoundException){
+            Toast.makeText(this,"Không có ứng dụng hỗ trợ xem thông tin liên hệ",Toast.LENGTH_SHORT).show();
+
+        }
+    }
+
+
+    private void viewContact() {
+        EditText idd=findViewById(R.id.viewContactButton);
+        // Create an intent to edit the contact using its ID
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        Uri contactUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, idd.getText().toString());
+        intent.setData(contactUri);
+        intent.putExtra("finishActivityOnSaveCompleted", true); // Optional flag to finish activity when done editing
+        try {
+            startActivity(intent);
+        }catch(ActivityNotFoundException activityNotFoundException){
+            Toast.makeText(this, "Không có ứng dụng hỗ trợ xem thông tin liên hệ", Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
+    private void editviewcontract() {
+        EditText idd=findViewById(R.id.viewContactButton);
+        // Create an intent to edit the contact using its ID
+        Intent intent = new Intent(Intent.ACTION_EDIT);
+        Uri contactUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, idd.getText().toString());
+        intent.setData(contactUri);
+        intent.putExtra("finishActivityOnSaveCompleted", true); // Optional flag to finish activity when done editing
+        try {
+            startActivity(intent);
+        }catch(ActivityNotFoundException activityNotFoundException){
+            Toast.makeText(this, "Không có ứng dụng hỗ trợ xem thông tin liên hệ", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void searchWeb(String query) {
@@ -268,6 +402,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Permission denied. Cannot make a phone call without permission.", Toast.LENGTH_SHORT).show();
             }
         }
+
     }
 
     public void dialPhoneNumber() {
@@ -324,6 +459,69 @@ public class MainActivity extends AppCompatActivity {
             imageView.setImageBitmap(img);
             imageView.setVisibility(View.VISIBLE);
         }
+        else if (requestCode == REQUEST_SELECT_PHONE_NUMBER && resultCode == RESULT_OK) {
+            // Get the URI and query the content provider for the phone number.
+            Uri contactUri = data.getData();
+            String[] projection = new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER};
+            Cursor cursor = getContentResolver().query(contactUri, projection,
+                    null, null, null);
+            // If the cursor returned is valid, get the phone number.
+            if (cursor != null && cursor.moveToFirst()) {
+                int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                String number = cursor.getString(numberIndex);
+
+                // Assuming you have a TextView with ID userInfoTextView
+                TextView userInfoTextView = findViewById(R.id.userInfoTextView);
+
+                // Update the TextView with user information
+                userInfoTextView.setText("User's Phone Number: " + number);
+
+                cursor.close(); // Don't forget to close the cursor when you're done with it
+            }
+        }
+        else if(requestCode == PICK_CONTACT_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Uri contactUri = data.getData();
+                processSelectedContact(contactUri);
+            } else {
+                Toast.makeText(this, "Contact selection canceled", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    private void processSelectedContact(Uri contactUri) {
+        Cursor cursor = getContentResolver().query(contactUri, null, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int nameColumnIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+            String contactName = cursor.getString(nameColumnIndex);
+            Toast.makeText(this, "Selected contact: " + contactName, Toast.LENGTH_SHORT).show();
+        }
+
+        if (cursor != null) {
+            cursor.close();
+        }
+    }
+    private long convertTimeToMilliseconds(String inputTime) {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        Date time;
+        try {
+            time = sdf.parse(inputTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return -1; // Trả về giá trị âm nếu có lỗi xảy ra
+        }
+
+        if (time != null) {
+            Calendar eventTime = Calendar.getInstance();
+            eventTime.setTime(time);
+
+            calendar.set(Calendar.HOUR_OF_DAY, eventTime.get(Calendar.HOUR_OF_DAY));
+            calendar.set(Calendar.MINUTE, eventTime.get(Calendar.MINUTE));
+            calendar.set(Calendar.SECOND, 0);
+        }
+
+        return calendar.getTimeInMillis();
     }
 
 

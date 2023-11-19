@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Contacts/people app"
+        android:textColor="@android:color/holo_red_light"
+        android:textAlignment="center"
+        android:textSize="25dp" />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/viewContactButton"
+        android:hint="Enter id to search"
+        tools:ignore="HardcodedText" />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/insert_phone"
+        android:hint="Enter  to phone"
+        tools:ignore="HardcodedText" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/insert_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Enter to name"
+            tools:ignore="HardcodedText" />
+        <EditText
+            android:id="@+id/insert_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Enter to email"
+            tools:ignore="HardcodedText" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <Button
+        android:id="@+id/btn_viewContactButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View Contact with id"
+        android:layout_weight="1" />
+    <Button
+        android:id="@+id/btn_editContactButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Edit View Contact with id"
+        android:layout_weight="1" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <Button
+        android:id="@+id/btn_selectContact"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select a contact"
+        android:layout_weight="1" />
+    <Button
+        android:id="@+id/pickContactButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pick a Contact"
+        android:layout_centerInParent="true"
+        android:layout_weight="1"/>
+    </LinearLayout>
+    <Button
+        android:id="@+id/btn_insert_contract"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pick a Contact"
+        android:layout_centerInParent="true"
+        android:layout_weight="1"/>
+    <TextView
+        android:id="@+id/userInfoTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/pickContactButton"
+        android:layout_marginTop="20dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true" />
+
+
+</LinearLayout>
