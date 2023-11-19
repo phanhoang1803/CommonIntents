@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.AlarmClock;
+import android.provider.CalendarContract;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +23,12 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -155,6 +162,48 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        button = findViewById(R.id.btn_search_map);
+        EditText map = findViewById(R.id.search_map);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String text_map = map.getText().toString().trim();
+                    Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + text_map);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    intent.setPackage("com.google.android.apps.maps");
+                try{
+                    startActivity(intent);
+                }
+                catch(ActivityNotFoundException activityNotFoundException) {
+                    Toast.makeText(MainActivity.this, "No search web found. Please search manually.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        EditText title = findViewById(R.id.eTitle);
+        EditText location = findViewById(R.id.eLocation);
+        EditText start = findViewById(R.id.eBegin);
+        EditText end = findViewById(R.id.eEnd);
+        findViewById(R.id.btn_calendar).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long startTimeInMillis = convertTimeToMilliseconds(start.getText().toString());
+                long endTimeInMillis = convertTimeToMilliseconds(end.getText().toString());
+                Intent intent = new Intent(Intent.ACTION_INSERT)
+                        .setData(CalendarContract.Events.CONTENT_URI)
+                        .putExtra(CalendarContract.Events.TITLE, title.getText().toString())
+                        .putExtra(CalendarContract.Events.EVENT_LOCATION, location.getText().toString())
+                        .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startTimeInMillis)
+                        .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endTimeInMillis);
+                try{
+                    startActivity(intent);
+                }
+                catch(ActivityNotFoundException activityNotFoundException){
+                    Toast.makeText(MainActivity.this, "No search web found. Please search manually.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
 
     }
 
@@ -324,6 +373,28 @@ public class MainActivity extends AppCompatActivity {
             imageView.setImageBitmap(img);
             imageView.setVisibility(View.VISIBLE);
         }
+    }
+    private long convertTimeToMilliseconds(String inputTime) {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        Date time;
+        try {
+            time = sdf.parse(inputTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return -1; // Trả về giá trị âm nếu có lỗi xảy ra
+        }
+
+        if (time != null) {
+            Calendar eventTime = Calendar.getInstance();
+            eventTime.setTime(time);
+
+            calendar.set(Calendar.HOUR_OF_DAY, eventTime.get(Calendar.HOUR_OF_DAY));
+            calendar.set(Calendar.MINUTE, eventTime.get(Calendar.MINUTE));
+            calendar.set(Calendar.SECOND, 0);
+        }
+
+        return calendar.getTimeInMillis();
     }
 
 
