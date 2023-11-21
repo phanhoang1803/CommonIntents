@@ -12,12 +12,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.AlarmClock;
 import android.provider.CalendarContract;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,19 +39,19 @@ public class MainActivity extends AppCompatActivity {
     Button button;
     private static final int REQUEST_CALL_PHONE = 1;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
-    private static final int REQUEST_PICK_MUSIC = 3;
+    private static final int PICK_AUDIO_REQUEST_CODE = 3;
     private static final int REQUEST_SELECT_CONTACT = 4;
     private static  final  int REQUEST_SELECT_PHONE_NUMBER = 5;
     private static final int REQUEST_SELECT_CONTACT_FOR_VIEWING = 6;
     private static final int REQUEST_SELECT_CONTACT_FOR_EMAIL_EDITING = 7;
+    private static final int STORAGE_PERMISSION_CODE = 123;
 
 
-    private TextView textViewTrackName;
-    private Button btnChooseTrack;
-    private SeekBar seekBarProgress;
-    private Button btnPlayPause;
+
     private Uri globalURI;
-
+    private TextView tvFileName;
+    private MediaPlayer mediaPlayer;
+    private Uri selectedFileUri;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -158,19 +160,32 @@ public class MainActivity extends AppCompatActivity {
 
 
         // PLAY MUSIC
-        btnChooseTrack = findViewById(R.id.btnChooseTrack);
-        btnChooseTrack.setOnClickListener(new View.OnClickListener() {
+        button = findViewById(R.id.btnChooseTrack);
+        tvFileName = findViewById(R.id.tvFileName);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
-
-                try{
-                    startActivityForResult(intent, REQUEST_PICK_MUSIC);
-                }catch (ActivityNotFoundException e){
-                    Toast.makeText(MainActivity.this, "No music app found. Please choose a track manually.", Toast.LENGTH_SHORT).show();
-                }
+                requestStoragePermission();
             }
         });
+
+        button = findViewById(R.id.btnPlay);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playAudio();
+            }
+        });
+
+        button = findViewById(R.id.btnStop);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopAudio();
+            }
+        });
+
+
 
         // SEARCH MAP
         button = findViewById(R.id.btn_search_map);
@@ -408,6 +423,107 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "No web browser found. Please open a web browser manually.", Toast.LENGTH_SHORT).show();
         }
     }
+
+
+    private void requestStoragePermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    STORAGE_PERMISSION_CODE
+            );
+        } else {
+            openFilePicker();
+        }
+    }
+
+    private void openFilePicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("audio/*");
+        startActivityForResult(intent, PICK_AUDIO_REQUEST_CODE);
+        Log.d("TAG", "openFilePicker: " + intent);
+    }
+
+    private void playAudio() {
+        Button btnPlay = findViewById(R.id.btnPlay); // Declare and initialize btnPlay locally
+        Button btnStop = findViewById(R.id.btnStop); // Declare and initialize btnStop locally
+
+
+
+        if (selectedFileUri != null) {
+            mediaPlayer = new MediaPlayer();
+
+
+            try {
+                mediaPlayer.setDataSource(getApplicationContext(), selectedFileUri);
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+
+                btnPlay.setEnabled(false);
+                btnStop.setEnabled(true);
+
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        // Enable the Play button and disable the Stop button when playback completes
+                        btnPlay.setEnabled(true);
+                        btnStop.setEnabled(false);
+                        mp.release();
+                    }
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Error playing audio", Toast.LENGTH_SHORT).show();
+                btnPlay.setEnabled(true);
+                btnStop.setEnabled(false);
+            }
+        } else {
+            Toast.makeText(this, "Please select an audio file", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private void stopAudio() {
+        Button btnPlay = findViewById(R.id.btnPlay);
+        Button btnStop = findViewById(R.id.btnStop);
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            btnPlay.setEnabled(true);
+            btnStop.setEnabled(false);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
+    private String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            try {
+                result = getContentResolver().query(uri, null, null, null, null).getString(0);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
+    }
+
     
     private void makePhoneCall() {
         EditText phoneNumberEditText = findViewById(R.id.input_phone_number);
@@ -417,7 +533,6 @@ public class MainActivity extends AppCompatActivity {
             if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PHONE);
             } else {
-                // Permission already granted
                 performCall(phoneNumber);
             }
         } else {
@@ -436,19 +551,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Permission denied. Please grant the CALL_PHONE permission.", Toast.LENGTH_SHORT).show();
         }
     }
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CALL_PHONE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, make the phone call
-                makePhoneCall();
-            } else {
-                // Permission denied, inform the user
-                Toast.makeText(this, "Permission denied. Cannot make a phone call without permission.", Toast.LENGTH_SHORT).show();
-            }
-        }
 
-    }
 
     public void dialPhoneNumber() {
         EditText phoneNumberEditText = findViewById(R.id.input_phone_number);
@@ -458,7 +561,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             startActivity(intent);
         } catch (ActivityNotFoundException activityNotFoundException) {
-            // Fallback: Inform the user that no app can handle the dialing action.
             Toast.makeText(this, "No dialer found. Please dial manually.", Toast.LENGTH_SHORT).show();
         }
     }
@@ -473,7 +575,7 @@ public class MainActivity extends AppCompatActivity {
         String body = bodyEditText.getText().toString();
 
         Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-        emailIntent.setData(Uri.parse("mailto:")); // Only email apps should handle this
+        emailIntent.setData(Uri.parse("mailto:"));
 
         emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipients});
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
@@ -496,8 +598,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         ImageView imageView = findViewById(R.id.imgCamera);
+        if (requestCode == PICK_AUDIO_REQUEST_CODE && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            selectedFileUri = data.getData();
+            String fileName = getFileName(selectedFileUri);
+            tvFileName.setText(fileName);
+            Button btnPlay = findViewById(R.id.btnPlay);
+            btnPlay.setEnabled(true);
+        }
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+        else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
             Bitmap img = (Bitmap) data.getExtras().get("data");
             imageView.setImageBitmap(img);
             imageView.setVisibility(View.VISIBLE);
@@ -514,15 +623,12 @@ public class MainActivity extends AppCompatActivity {
                 int nameColumnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
                 String contactName = cursor.getString(nameColumnIndex);
 
-                // Print the name of the selected contact
                 Toast.makeText(this, "Selected contact name: " + contactName, Toast.LENGTH_SHORT).show();
 
-                // Close the cursor to avoid memory leaks
                 cursor.close();
             }
         }
         else if (requestCode == REQUEST_SELECT_PHONE_NUMBER && resultCode == RESULT_OK) {
-            // Get the URI and query the content provider for the phone number.
             Uri contactUri = data.getData();
             String[] projection = new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER};
             Cursor cursor = getContentResolver().query(contactUri, projection,
@@ -547,6 +653,10 @@ public class MainActivity extends AppCompatActivity {
             editContact(contactUri, newEmail.getText().toString());
         }
     }
+
+
+
+
 
     private long convertTimeToMilliseconds(String inputTime) {
         Calendar calendar = Calendar.getInstance();
